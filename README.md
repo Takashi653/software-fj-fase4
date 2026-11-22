@@ -31,3 +31,7 @@ Cada código de servicio identifica una unidad. Una reserva pendiente o confirma
 - Casos 24 a 27. La solicitud sin duración falla. La asesoría de dos horas termina con un cobro de 90.000 COP.
 
 Los errores de dominio conservan un mensaje legible. Cuando una conversión falla, el log conserva también la excepción original. Un fallo imprevisto se cuenta por separado y produce un código de salida distinto de cero al terminar la serie.
+
+## Editar y borrar registros
+
+Seleccione una fila en Clientes, Servicios o Reservas y pulse **Editar** o **Borrar**. El código identifica al registro y se conserva. Puede modificar el cliente, el recurso y las horas de una reserva pendiente o confirmada. Un cambio de tarifa afecta a las nuevas reservas. El borrado requiere confirmar el código mostrado. Si un cliente o servicio tiene reservas vinculadas, el mensaje indica cuáles.
