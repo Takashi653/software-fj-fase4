@@ -1,4 +1,8 @@
 # Software FJ
+
+**Presentación individual:** Atanael Balaguera Barbosa · Grupo 61.
+
+Ejecute `python main.py` desde la raíz del proyecto. Este punto de entrada reproduce las 27 operaciones de `principal.py`.
 Sistema de clientes, servicios y reservas para la práctica simulada de Programación (213023). Los ejemplos utilizan datos ficticios.
 
 ## Ejecutar la simulación
