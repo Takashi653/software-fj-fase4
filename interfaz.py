@@ -31,18 +31,34 @@ class Panel:
     def operar(self, accion, datos):
         g = self.gestion
         codigo = str(datos.get("codigo", "")).strip().upper()
-        if accion == "cliente":
-            nombre, correo = datos["nombre"].strip(), datos["correo"].strip()
-            resultado = g.cliente(codigo, nombre, correo)
-            self.clientes.append(dict(codigo=codigo, nombre=nombre, correo=correo))
-        elif accion == "servicio":
-            tipo, tarifa = datos["tipo"], datos["tarifa"]
-            resultado = g.servicio(tipo, codigo, tarifa)
-            self.servicios.append(dict(codigo=codigo, tipo=tipo, tarifa=float(tarifa)))
-        elif accion == "reservar":
-            cliente, recurso, horas = datos["cliente"], datos["servicio"], datos["horas"]
-            resultado = g.reservar(codigo, cliente, recurso, horas)
-            self.reservas.insert(0, dict(codigo=codigo, cliente=cliente, servicio=recurso, horas=int(float(horas)), estado="pendiente", total=None))
+        editar = accion.startswith("editar_")
+        tipo_registro = accion.split("_", 1)[-1]
+        listas = {"cliente": self.clientes, "servicio": self.servicios, "reserva": self.reservas}
+        if accion.startswith("borrar_"):
+            resultado = g.borrar(tipo_registro, codigo)
+            lista = listas[tipo_registro]
+            lista[:] = [fila for fila in lista if fila["codigo"] != codigo]
+        elif tipo_registro in ("cliente", "servicio", "reserva", "reservar"):
+            if tipo_registro == "cliente":
+                nombre, correo = datos["nombre"].strip(), datos["correo"].strip()
+                resultado = g.cliente(codigo, nombre, correo, editar=editar)
+                fila = dict(codigo=codigo, nombre=nombre, correo=correo)
+            elif tipo_registro == "servicio":
+                tipo, tarifa = datos["tipo"], datos["tarifa"]
+                resultado = g.servicio(tipo, codigo, tarifa, editar=editar)
+                fila = dict(codigo=codigo, tipo=tipo, tarifa=float(tarifa))
+            else:
+                tipo_registro = "reserva"
+                cliente, recurso, horas = datos["cliente"], datos["servicio"], datos["horas"]
+                resultado = g.reservar(codigo, cliente, recurso, horas, editar=editar)
+                fila = dict(codigo=codigo, cliente=cliente, servicio=recurso, horas=int(float(horas)))
+            lista = listas[tipo_registro]
+            if editar:
+                next(item for item in lista if item["codigo"] == codigo).update(fila)
+            elif tipo_registro == "reserva":
+                lista.insert(0, dict(fila, estado="pendiente", total=None))
+            else:
+                lista.append(fila)
         elif accion in ("confirmar", "cancelar", "procesar"):
             reserva = next((r for r in self.reservas if r["codigo"] == codigo), None)
             if reserva is None:
@@ -215,11 +231,11 @@ class Escritorio:
             self.lista_reservas(self.panel.reservas)
         elif pagina=="Clientes":
             self.titulo("Clientes","＋ Nuevo cliente",lambda:self.abrir("cliente"))
-            self.tabla(["Código","Nombre","Correo"],[95,195,270],
+            self.tabla_catalogo("cliente",["Código","Nombre","Correo"],[95,195,270],
                        [(c["codigo"],c["nombre"],c["correo"]) for c in self.panel.clientes])
         elif pagina=="Servicios":
             self.titulo("Servicios","＋ Nuevo servicio",lambda:self.abrir("servicio"))
-            self.tabla(["Código","Servicio","Tarifa por hora","Disponibilidad"],[75,190,130,130],
+            self.tabla_catalogo("servicio",["Código","Servicio","Tarifa por hora","Disponibilidad"],[75,190,130,130],
                        [(s["codigo"],TITULOS[s["tipo"]],pesos(s["tarifa"]),"Ocupado" if self.ocupado(s["codigo"]) else "Disponible") for s in self.panel.servicios])
         else:
             self.titulo("Simulaciones","▷ Ejecutar 27 pruebas",self.simular)
@@ -254,6 +270,23 @@ class Escritorio:
             etiqueta(area,vacio,10,MUTED).place(relx=.5,rely=.58,anchor="center")
         return tabla
 
+    def tabla_catalogo(self,tipo,columnas,anchos,filas):
+        pie=tk.Frame(self.cuerpo,bg=PAPER)
+        pie.pack(side="bottom",fill="x",pady=(8,0))
+        tabla=self.tabla(columnas,anchos,filas,"Todavía no hay registros.")
+        def abrir_seleccion(accion):
+            seleccion=tabla.selection()
+            if seleccion:
+                self.abrir(accion+"_"+tipo, str(tabla.set(seleccion[0],columnas[0])))
+        for accion,titulo in [("editar","Editar"),("borrar","Borrar")]:
+            btn=boton(pie,titulo,lambda a=accion:abrir_seleccion(a),
+                      "#f4e2db" if accion=="borrar" else "#deebe5",INK)
+            btn.pack(side="left",padx=(0,6))
+            if not filas:btn.configure(state="disabled")
+        if filas:
+            tabla.selection_set(tabla.get_children()[0])
+            tabla.bind("<Double-1>",lambda e:abrir_seleccion("editar"))
+
     def lista_reservas(self,reservas):
         nombres={c["codigo"]:c["nombre"] for c in self.panel.clientes}
         controles=tk.Frame(self.cuerpo,bg=PAPER);controles.pack(side="bottom",fill="x",pady=(7,0))
@@ -273,7 +306,7 @@ class Escritorio:
             if r:self.abrir(a,r["codigo"])
         if reservas:
             etiqueta(controles,"Reserva seleccionada",10,MUTED).pack(side="left",padx=(0,8))
-            for a,t,e in [("confirmar","Confirmar",("pendiente",)),("procesar","Cobrar",("confirmada",)),("cancelar","Cancelar",("pendiente","confirmada"))]:
+            for a,t,e in [("editar_reserva","Editar",("pendiente","confirmada")),("borrar_reserva","Borrar",("pendiente","confirmada","cancelada","procesada")),("confirmar","Confirmar",("pendiente",)),("procesar","Cobrar",("confirmada",)),("cancelar","Cancelar",("pendiente","confirmada"))]:
                 btn=boton(controles,t,lambda v=a:operar(v),"#e0eae5",HERO);btn.pack(side="left",padx=3)
                 acciones[a]=(btn,e)
             tabla.selection_set(tabla.get_children()[0]);seleccionado()
@@ -285,6 +318,14 @@ class Escritorio:
 
     def abrir(self,accion,codigo=""):
         titulos={"reservar":"Nueva reserva","servicio":"Nuevo servicio","cliente":"Nuevo cliente","confirmar":"Confirmar reserva","cancelar":"Cancelar reserva","procesar":"Cobrar reserva"}
+        tipo=accion.split("_",1)[-1]
+        editar=accion.startswith("editar_")
+        borrar=accion.startswith("borrar_")
+        actual={}
+        if editar or borrar:
+            listas={"cliente":self.panel.clientes,"servicio":self.panel.servicios,"reserva":self.panel.reservas}
+            actual=next(r for r in listas[tipo] if r["codigo"]==codigo)
+            titulos[accion]=("Editar " if editar else "Borrar ")+tipo
         f=tk.Toplevel(self.raiz);self.formulario=f;f.withdraw();f.title(titulos[accion]);f.configure(bg=WHITE);f.transient(self.raiz)
         f.resizable(False,False)
         box=tk.Frame(f,bg=WHITE);box.pack(fill="both",padx=24,pady=20)
@@ -292,6 +333,7 @@ class Escritorio:
         valores={};opciones={}
         def campo(clave,nombre,valor="",items=None):
             etiqueta(box,nombre,10,MUTED,bold=True).pack(anchor="w",pady=(6,3))
+            valor=actual.get(clave,valor)
             var=tk.StringVar(f,value=valor);valores[clave]=var
             if items is None:
                 e=ttk.Entry(box,textvariable=var,width=38,font=("Segoe UI",11));e.pack(fill="x",ipady=4)
@@ -299,20 +341,25 @@ class Escritorio:
                 opciones[clave]={et:cod for cod,et in items}
                 e=ttk.Combobox(box,textvariable=var,values=list(opciones[clave]),state="readonly",width=38,font=("Segoe UI",10))
                 e.pack(fill="x")
-                if items:e.current(0)
+                if opciones[clave]:
+                    e.set(next((et for et,cod in opciones[clave].items() if cod==valor),next(iter(opciones[clave]))))
+            if editar and clave=="codigo":e.configure(state="readonly")
             return e
         def siguiente(pref,lista):
             codigos={obj["codigo"] for obj in lista};n=1
             while f"{pref}{n}" in codigos:n+=1
             return f"{pref}{n}"
-        if accion=="cliente":
+        if borrar:
+            etiqueta(box,f"¿Eliminar el registro {codigo}?",12,bold=True).pack(anchor="w")
+            etiqueta(box,"Esta acción lo quita de la sesión actual.",10,MUTED).pack(anchor="w",pady=5)
+        elif tipo=="cliente":
             campo("codigo","Código",siguiente("C",self.panel.clientes));campo("nombre","Nombre completo");campo("correo","Correo electrónico")
-        elif accion=="servicio":
+        elif tipo=="servicio":
             campo("codigo","Código",siguiente("S",self.panel.servicios));campo("tipo","Tipo de servicio",items=TITULOS.items());campo("tarifa","Tarifa por hora (COP)")
-        elif accion=="reservar":
+        elif tipo in ("reservar","reserva"):
             campo("codigo","Código",siguiente("R",self.panel.reservas))
             campo("cliente","Cliente",items=[(c["codigo"],c["nombre"]+" · "+c["codigo"]) for c in self.panel.clientes])
-            campo("servicio","Servicio disponible",items=[(s["codigo"],TITULOS[s["tipo"]]+" · "+s["codigo"]) for s in self.panel.servicios if not self.ocupado(s["codigo"])])
+            campo("servicio","Servicio disponible",items=[(s["codigo"],TITULOS[s["tipo"]]+" · "+s["codigo"]) for s in self.panel.servicios if s["codigo"]==actual.get("servicio") or not self.ocupado(s["codigo"])])
             campo("horas","Duración en horas","1")
         else:
             etiqueta(box,"Reserva "+codigo,12,TEAL,bold=True).pack(anchor="w")
@@ -323,7 +370,7 @@ class Escritorio:
             try:
                 datos={k:opciones[k].get(v.get(),"") if k in opciones else v.get() for k,v in valores.items()}
                 if codigo:datos["codigo"]=codigo
-                if accion=="reservar" and not datos["servicio"]:
+                if not borrar and tipo in ("reservar","reserva") and not datos["servicio"]:
                     raise DatoInvalido("Registra un servicio disponible antes de reservar.")
                 resultado=self.panel.operar(accion,datos)
             except (ErrorGestion,ValueError) as causa:
@@ -333,8 +380,9 @@ class Escritorio:
             self.estado.set(resultado);f.destroy();self.ver(self.pagina)
         pie=tk.Frame(box,bg=WHITE);pie.pack(fill="x")
         boton(pie,"Volver",f.destroy,"#e5ece8",INK).pack(side="left")
-        boton(pie,{"procesar":"Confirmar cobro","cancelar":"Cancelar reserva","confirmar":"Confirmar"}.get(accion,"Guardar"),guardar).pack(side="right")
-        f.bind("<Escape>",lambda event:f.destroy());f.bind("<Return>",lambda event:guardar())
+        boton(pie,"Borrar registro" if borrar else {"procesar":"Confirmar cobro","cancelar":"Cancelar reserva","confirmar":"Confirmar"}.get(accion,"Guardar"),guardar).pack(side="right")
+        f.bind("<Escape>",lambda event:f.destroy());
+        if not borrar:f.bind("<Return>",lambda event:guardar())
         f.update_idletasks();x=self.raiz.winfo_rootx()+(self.raiz.winfo_width()-f.winfo_reqwidth())//2
         y=self.raiz.winfo_rooty()+(self.raiz.winfo_height()-f.winfo_reqheight())//2
         f.geometry(f"+{max(0,x)}+{max(0,y)}");f.deiconify();f.grab_set();f.focus_set()
