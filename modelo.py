@@ -138,6 +138,10 @@ class Reserva(Entidad):
         self.__estado = "pendiente"
 
     @property
+    def cliente(self):
+        return self.__cliente
+
+    @property
     def servicio(self):
         return self.__servicio
 
