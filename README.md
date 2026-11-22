@@ -5,6 +5,10 @@
 Ejecute `python main.py` desde la raíz del proyecto. Este punto de entrada reproduce las 27 operaciones de `principal.py`.
 Sistema de clientes, servicios y reservas para la práctica simulada de Programación (213023). Los ejemplos utilizan datos ficticios.
 
+## Abrir la interfaz de escritorio
+
+En Windows, haga doble clic en **Abrir Software FJ.pyw** después de extraer la carpeta completa. También puede ejecutar **python interfaz.py**. Se requiere Python 3 con Tkinter. El programa funciona sin conexión. El panel contiene dos clientes ficticios y tres servicios iniciales. Cree una reserva, confirme y cobre o cancele. La vista **Simulaciones** ejecuta los 27 casos en una sesión independiente. Al cerrar la ventana termina la aplicación y se conserva la bitácora.
+
 ## Ejecutar la simulación
 Desde esta carpeta, con Python 3.8 o posterior, ejecute:
 
