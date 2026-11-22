@@ -1,0 +1,190 @@
+2026-11-22 12:31:10,948 | INFO | INICIO DE SIMULACIÓN
+2026-11-22 12:31:10,949 | INFO | 01 Alta de cliente | ACEPTADA | C1 · Ana Ríos
+2026-11-22 12:31:10,949 | INFO | 01 Alta de cliente | FIN DE OPERACIÓN
+2026-11-22 12:31:10,949 | ERROR | 02 Correo incompleto | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 30, in cliente
+    return self._guardar(self._clientes, Cliente(codigo, nombre, correo))
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 57, in __init__
+    raise DatoInvalido("El correo requiere usuario y dominio.")
+modelo.DatoInvalido: El correo requiere usuario y dominio.
+2026-11-22 12:31:10,954 | INFO | 02 Correo incompleto | FIN DE OPERACIÓN
+2026-11-22 12:31:10,954 | INFO | 03 Correo corregido | ACEPTADA | C2 · Luis Mora
+2026-11-22 12:31:10,954 | INFO | 03 Correo corregido | FIN DE OPERACIÓN
+2026-11-22 12:31:10,954 | ERROR | 04 Código duplicado | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 30, in cliente
+    return self._guardar(self._clientes, Cliente(codigo, nombre, correo))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 17, in _guardar
+    raise OperacionInvalida(f"El código {objeto.codigo} ya está registrado.")
+modelo.OperacionInvalida: El código C1 ya está registrado.
+2026-11-22 12:31:10,956 | INFO | 04 Código duplicado | FIN DE OPERACIÓN
+2026-11-22 12:31:10,956 | INFO | 05 Registrar sala | ACEPTADA | S1 · sala por hora
+2026-11-22 12:31:10,956 | INFO | 05 Registrar sala | FIN DE OPERACIÓN
+2026-11-22 12:31:10,956 | ERROR | 06 Tarifa no numérica | RECHAZADA
+Traceback (most recent call last):
+  File "modelo.py", line 29, in numero
+    resultado = Decimal(str(valor))
+                ^^^^^^^^^^^^^^^^^^^
+decimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 37, in servicio
+    return self._guardar(self._servicios, clase(codigo, tarifa))
+                                          ^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 71, in __init__
+    self._tarifa = numero(tarifa, "La tarifa", Decimal("0.01"), 100000000)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 31, in numero
+    raise DatoInvalido(f"{campo} requiere un valor numérico.") from causa
+modelo.DatoInvalido: La tarifa requiere un valor numérico.
+2026-11-22 12:31:10,956 | INFO | 06 Tarifa no numérica | FIN DE OPERACIÓN
+2026-11-22 12:31:10,956 | INFO | 07 Registrar equipo | ACEPTADA | E1 · equipo con preparación
+2026-11-22 12:31:10,956 | INFO | 07 Registrar equipo | FIN DE OPERACIÓN
+2026-11-22 12:31:10,956 | INFO | 08 Registrar asesoría | ACEPTADA | A1 · asesoría especializada
+2026-11-22 12:31:10,956 | INFO | 08 Registrar asesoría | FIN DE OPERACIÓN
+2026-11-22 12:31:10,956 | ERROR | 09 Tipo desconocido | RECHAZADA
+Traceback (most recent call last):
+  File "gestion.py", line 34, in servicio
+    clase = self.tipos[texto(tipo, "el tipo").lower()]
+            ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'viaje'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 36, in servicio
+    raise DatoInvalido("Tipo de servicio desconocido.") from causa
+modelo.DatoInvalido: Tipo de servicio desconocido.
+2026-11-22 12:31:10,957 | INFO | 09 Tipo desconocido | FIN DE OPERACIÓN
+2026-11-22 12:31:10,957 | ERROR | 10 Cliente desconocido | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 42, in reservar
+    persona = self._buscar(self._clientes, cliente)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 27, in _buscar
+    raise OperacionInvalida(f"No existe el código {clave}.")
+modelo.OperacionInvalida: No existe el código C9.
+2026-11-22 12:31:10,957 | INFO | 10 Cliente desconocido | FIN DE OPERACIÓN
+2026-11-22 12:31:10,957 | ERROR | 11 Exceso de horas | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 48, in reservar
+    return self._guardar(self._reservas, Reserva(codigo, persona, recurso, horas))
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 137, in __init__
+    self.__horas = servicio.validar(horas)
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 122, in validar
+    return horas_enteras(horas, 4)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 91, in horas_enteras
+    cantidad = numero(horas, "La duración en horas", 1, limite)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 33, in numero
+    raise DatoInvalido(f"{campo} debe estar entre {minimo} y {maximo}.")
+modelo.DatoInvalido: La duración en horas debe estar entre 1 y 4.
+2026-11-22 12:31:10,959 | INFO | 11 Exceso de horas | FIN DE OPERACIÓN
+2026-11-22 12:31:10,959 | INFO | 12 Reservar sala | ACEPTADA | R1 · C1 · S1 · pendiente
+2026-11-22 12:31:10,959 | INFO | 12 Reservar sala | FIN DE OPERACIÓN
+2026-11-22 12:31:10,959 | ERROR | 13 Servicio ocupado | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 47, in reservar
+    raise OperacionInvalida(f"El servicio {recurso.codigo} está ocupado.")
+modelo.OperacionInvalida: El servicio S1 está ocupado.
+2026-11-22 12:31:10,960 | INFO | 13 Servicio ocupado | FIN DE OPERACIÓN
+2026-11-22 12:31:10,960 | ERROR | 14 Procesar sin confirmar | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 62, in procesar
+    total = reserva.procesar(**ajustes)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 160, in procesar
+    raise OperacionInvalida("Primero debe confirmar la reserva.")
+modelo.OperacionInvalida: Primero debe confirmar la reserva.
+2026-11-22 12:31:10,960 | INFO | 14 Procesar sin confirmar | FIN DE OPERACIÓN
+2026-11-22 12:31:10,960 | INFO | 15 Confirmar sala | ACEPTADA | R1 · C1 · S1 · confirmada
+2026-11-22 12:31:10,960 | INFO | 15 Confirmar sala | FIN DE OPERACIÓN
+2026-11-22 12:31:10,960 | ERROR | 16 Descuento excesivo | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 62, in procesar
+    total = reserva.procesar(**ajustes)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 162, in procesar
+    total = self.servicio.calcular_costo(self.__horas, **ajustes)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 84, in calcular_costo
+    rebaja = numero(descuento, "El descuento (%)", 0, 100)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "modelo.py", line 33, in numero
+    raise DatoInvalido(f"{campo} debe estar entre {minimo} y {maximo}.")
+modelo.DatoInvalido: El descuento (%) debe estar entre 0 y 100.
+2026-11-22 12:31:10,960 | INFO | 16 Descuento excesivo | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 17 Cobrar sala con ajustes | ACEPTADA | R1 · C1 · S1 · procesada · COP 64260.00
+2026-11-22 12:31:10,961 | INFO | 17 Cobrar sala con ajustes | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 18 Reutilizar sala liberada | ACEPTADA | R2 · C2 · S1 · pendiente
+2026-11-22 12:31:10,961 | INFO | 18 Reutilizar sala liberada | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 19 Cancelar sala | ACEPTADA | R2 · C2 · S1 · cancelada
+2026-11-22 12:31:10,961 | INFO | 19 Cancelar sala | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | ERROR | 20 Repetir cancelación | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 57, in cancelar
+    reserva.cancelar()
+  File "modelo.py", line 155, in cancelar
+    raise OperacionInvalida("La reserva ya está cerrada.")
+modelo.OperacionInvalida: La reserva ya está cerrada.
+2026-11-22 12:31:10,961 | INFO | 20 Repetir cancelación | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 21 Reservar equipo | ACEPTADA | R3 · C2 · E1 · pendiente
+2026-11-22 12:31:10,961 | INFO | 21 Reservar equipo | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 22 Confirmar equipo | ACEPTADA | R3 · C2 · E1 · confirmada
+2026-11-22 12:31:10,961 | INFO | 22 Confirmar equipo | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 23 Cobrar equipo | ACEPTADA | R3 · C2 · E1 · procesada · COP 35000.00
+2026-11-22 12:31:10,961 | INFO | 23 Cobrar equipo | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | ERROR | 24 Falta la duración | RECHAZADA
+Traceback (most recent call last):
+  File "principal.py", line 59, in ejecutar
+    detalle = accion(*args, **opciones)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "gestion.py", line 41, in reservar
+    raise DatoInvalido("Falta la duración de la reserva.")
+modelo.DatoInvalido: Falta la duración de la reserva.
+2026-11-22 12:31:10,961 | INFO | 24 Falta la duración | FIN DE OPERACIÓN
+2026-11-22 12:31:10,961 | INFO | 25 Reservar asesoría | ACEPTADA | R4 · C1 · A1 · pendiente
+2026-11-22 12:31:10,961 | INFO | 25 Reservar asesoría | FIN DE OPERACIÓN
+2026-11-22 12:31:10,962 | INFO | 26 Confirmar asesoría | ACEPTADA | R4 · C1 · A1 · confirmada
+2026-11-22 12:31:10,962 | INFO | 26 Confirmar asesoría | FIN DE OPERACIÓN
+2026-11-22 12:31:10,962 | INFO | 27 Cobrar asesoría | ACEPTADA | R4 · C1 · A1 · procesada · COP 90000.00
+2026-11-22 12:31:10,962 | INFO | 27 Cobrar asesoría | FIN DE OPERACIÓN
+2026-11-22 12:31:10,962 | INFO | RESUMEN | 16 aceptadas, 11 rechazadas, 0 imprevistas.
